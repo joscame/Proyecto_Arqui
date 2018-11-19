@@ -5,4 +5,6 @@ public class IDEX {
     public int b;
     public int imm;
     public IR ir;
+    public boolean idBlocked;
+    public boolean exBlocked;
 }
