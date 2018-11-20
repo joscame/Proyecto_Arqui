@@ -45,10 +45,10 @@ public class Processor {
         this.exMem = new EXM();
         this.memWb = new MWB();
 
-        this.ifThread = new IF(this.ifId, this.pc);
+        this.ifThread = new IF(this.ifId, this.pc, this.instructionsMemory);
         this.id = new ID(this.ifId, this.idEx);
         this.ex = new EX(this.idEx, this.exMem, this.pc);
-        this.m = new M(this.exMem, this.memWb);
+        this.m = new M(this.exMem, this.memWb, this.dataMemory);
         this.wb = new WB(this.memWb);
     }
 
