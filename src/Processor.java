@@ -9,12 +9,10 @@ public class Processor {
     private int quantum;
 
     /**
-     * Declara los registros, memorias y caches
+     * Declara los registros y memorias
      */
     private ArrayList<Integer> instructionsMemory;
     private ArrayList<Integer> dataMemory;
-    private int[][] instructionsCache;
-    private int[][] dataCache;
     private ArrayList<Integer> registers;
     private Integer pc;
 
@@ -39,8 +37,6 @@ public class Processor {
         this.quantum = quantum;
         this.instructionsMemory = instructionsMemory;
         this.dataMemory = new ArrayList<Integer>(96);
-        this.instructionsCache = new int[4][5];
-        this.dataCache = new int[4][6];
         this.registers = new ArrayList<>(32);
         this.pc = 384;
 
@@ -49,9 +45,9 @@ public class Processor {
         this.exMem = new EXM();
         this.memWb = new MWB();
 
-        this.ifThread = new IF(this.ifId);
+        this.ifThread = new IF(this.ifId, this.pc);
         this.id = new ID(this.ifId, this.idEx);
-        this.ex = new EX(this.idEx, this.exMem);
+        this.ex = new EX(this.idEx, this.exMem, this.pc);
         this.m = new M(this.exMem, this.memWb);
         this.wb = new WB(this.memWb);
     }
