@@ -47,7 +47,7 @@ public class Processor {
 
         this.ifThread = new IF(this.ifId, this.pc, this.instructionsMemory);
         this.id = new ID(this.ifId, this.idEx);
-        this.ex = new EX(this.idEx, this.exMem, this.pc);
+        this.ex = new EX(this.idEx, this.exMem, this.pc, this.registers);
         this.m = new M(this.exMem, this.memWb, this.dataMemory);
         this.wb = new WB(this.memWb);
     }
