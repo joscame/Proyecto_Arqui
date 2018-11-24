@@ -14,6 +14,7 @@ public class Processor {
     private ArrayList<Integer> instructionsMemory;
     private ArrayList<Integer> dataMemory;
     private ArrayList<Integer> registers;
+    private ArrayList<Integer> registersLocks;
     private Integer pc;
 
     /**
@@ -37,7 +38,7 @@ public class Processor {
         this.quantum = quantum;
         this.instructionsMemory = instructionsMemory;
         this.dataMemory = new ArrayList<Integer>(96);
-        this.registers = new ArrayList<>(32);
+        this.registers = new ArrayList<>(33);
         this.pc = 384;
 
         this.ifId = new IFID();
