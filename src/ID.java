@@ -121,6 +121,14 @@ public class ID implements Runnable {
 
         }
     }
+    private void blockIfBranch(){
+        int operationCode = ifId.ir.getOperationCode();
+        switch (operationCode) {
+            case 99: case 100: case 111: case 103: // 99 beq -100 bne -111 jal -103 jalr
+                this.tempIdBlocked = true;
+                break;
+        }
+    }
 
     private void sendResultsToEx(){
         this.idEx.a = this.tempA;
@@ -129,6 +137,7 @@ public class ID implements Runnable {
         this.idEx.ir = this.tempIr;
         this.idEx.RL = this.tempRl;
         this.idEx.idBlocked = this.tempIdBlocked;
+        this.ifId.idBlocked = this.tempIdBlocked;
         this.idEx.npc = this.ifId.npc;
     }
 }

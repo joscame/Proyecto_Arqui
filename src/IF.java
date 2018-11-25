@@ -8,7 +8,8 @@ public class IF implements Runnable {
     private ArrayList<Integer> instructionsMemory;
     private ArrayList<InstructionsBlock> instructionsCache;
     private int failCounter;
-    private int tempIfBlocked;
+    private boolean tempIfBlocked;
+    private IR tempIr;
 
     public IF (IFID ifId, Integer pc, ArrayList<Integer> instructionsMemory){
         this.ifId = ifId;
@@ -27,36 +28,50 @@ public class IF implements Runnable {
         System.out.println("IF is running");
     }
 
-    private void cargarInst(){
+    private void loadInst() {
 
         int dir = (this.pc) - 384;
-        int numBlock = dir/16;
+        int numBlock = dir / 16;
         int numWord = dir % 16;
 
-        //buscar en cache la instruccion el bloque
-        if(instructionsCache.get(numBlock%4).blockId == numBlock)//estaba en cache
+        if(ifId.idBlocked = true)
         {
-            ifId.ir = instructionsCache.get(numBlock%4).words.get(numWord);
-        }else{ //fallo de cache
-            this.ifId.ifBlocked = true;
-            if(failCounter == 0)
-            {
+            this.pc = this.pc-4;
+        }
+
+        //buscar en cache la instruccion el bloque
+        if (instructionsCache.get(numBlock % 4).blockId == numBlock)//si estaba en cache
+        {
+            tempIr = instructionsCache.get(numBlock % 4).words.get(numWord);
+        } else { //fallo de cache
+            this.tempIfBlocked = true;
+            if (failCounter == 0) {
                 failCounter = 48;
-            }
-            else if(failCounter == 1)
-            {
+            } else if (failCounter == 1) {
                 //copiar en cache
+                int blockStartPos = numBlock * 16;
+                ArrayList<Integer> block = new ArrayList<>();
+                InstructionsBlock newBlock = new InstructionsBlock();
+                for (int i = blockStartPos, j = 0; i < blockStartPos + 16; i++, j++) {
+                    block.add(instructionsMemory.get(i));
+                }
+                for (int i = 0; i < 16; i = i + 4) {
+                    newBlock.words.add(new IR(new ArrayList<>(block.subList(i, i + 3))));
+                }
+                newBlock.blockId = numBlock;
+                instructionsCache.set(numBlock % 4, newBlock);
                 failCounter = 0;
-            }
-            else{
+                this.tempIfBlocked = false;
+                this.pc = this.pc+4;
+            } else {
                 --failCounter;
             }
         }
-
-
-
-        //si esta se carga la instruccion desde el cache de inst al IR de IFID
-
+    }
+    public void sendResultsToID(){
+        this.ifId.ifBlocked = tempIfBlocked;
+        this.ifId.ir = tempIr;
+        this.ifId.npc = this.pc;
     }
 
 }
