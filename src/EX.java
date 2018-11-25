@@ -6,6 +6,7 @@ public class EX implements Runnable {
     private EXM exMem;
     private Integer pc;
     private ArrayList<Integer> registers;
+    private ArrayList<Integer> registersLocks;
 
     private int tempAluOutput;
     private int tempB;
@@ -14,11 +15,12 @@ public class EX implements Runnable {
     private int tempPc;
 
 
-    public EX (IDEX idEx, EXM exMem, Integer pc, ArrayList<Integer> registers){
+    public EX (IDEX idEx, EXM exMem, Integer pc, ArrayList<Integer> registers, ArrayList<Integer> registersLocks){
         this.idEx = idEx;
         this.exMem = exMem;
         this.pc = pc;
         this.registers = registers;
+        this.registersLocks = registersLocks;
     }
 
     public void run(){
@@ -96,6 +98,7 @@ public class EX implements Runnable {
 
             case 111: // jal
                 this.registers.set(idEx.ir.getDestinyResgister(), this.idEx.npc);
+                this.registersLocks.set(idEx.ir.getDestinyResgister(), 0);
                 this.tempAluOutput = getAluOutput();
                 this.tempPc = this.tempAluOutput;
                 break;
