@@ -16,6 +16,7 @@ public class M implements Runnable {
     private int tempLmd;
     private IR tempIr;
     private boolean tempMemBlocked;
+    private boolean tempCopyToMemory;
 
     int failCounter;
     boolean modifyDataMemory;
@@ -60,26 +61,57 @@ public class M implements Runnable {
                         }
                         break;
                 }
+                this.exMem.memBlocked = false;
+                this.tempMemBlocked = false;
             }
             else{ //Fallo de cache
                 if(this.failCounter == 0){
+
                     if (this.dataCache[cacheBlockNum][STATUS] == MODIFIED){
                         this.failCounter += 48;
                     }
                     this.failCounter += 48;
-                } else if (this.failCounter == 1){
-                    if (this.dataCache[cacheBlockNum][STATUS] == MODIFIED){
-                        int dataMemoryIndex = (this.exMem.aluOutput / 16) * 4;
+                    this.exMem.memBlocked = true;
+                    this.tempMemBlocked = true;
+
+                } else if (this.failCounter == 1){ // Es el último ciclo de reloj del fallo, se soluciona el fallo
+
+                    int dataMemoryIndex = (this.exMem.aluOutput / 16) * 4;
+                    if (this.dataCache[cacheBlockNum][STATUS] == MODIFIED){ //Si el bloque está modificado se copia a memoria
                         for (int i = dataMemoryIndex, j = 0; i < dataMemoryIndex + 4; i++, ++j) {
                             this.dataMemory.set(i, this.dataCache[cacheBlockNum][j]);
                         }
                     }
-                    else{
 
+                    for (int i = dataMemoryIndex, j = 0; i < dataMemoryIndex + 4; i++, ++j) { // Se copia el bloque de memoria a cache
+                        this.dataCache[cacheBlockNum][j] = this.dataMemory.get(i);
                     }
+
+                    // Se actualiza el num de bloque y el estado en el caché
+                    this.dataCache[cacheBlockNum][BLOCKID] = blockNum;
+                    this.dataCache[cacheBlockNum][STATUS] = SHARED;
+
+                    this.failCounter = 0;
+                }
+                else{ //Aún hay ciclos de reloj para fallo de caché, restarle al contador
+                    --this.failCounter;
                 }
             }
         }
+    }
+
+    private void prepareTempValues(){
+        this.tempCopyToMemory = this.exMem.copyToMemory;
+        this.tempIr = this.exMem.ir;
+        this.tempAluOutput = exMem.aluOutput;
+    }
+
+    private void sendResultsToWb(boolean changePc){
+        this.memWb.aluOutput = this.tempAluOutput;
+        this.memWb.copyToMemory = this.tempCopyToMemory;
+        this.memWb.ir = this.tempIr;
+        this.memWb.lmd = this.tempLmd;
+        this.memWb.memBlocked = this.tempMemBlocked;
     }
 
 

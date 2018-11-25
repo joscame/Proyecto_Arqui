@@ -4,6 +4,7 @@ public class MWB {
     public int lmd;
     public IR ir;
     public boolean memBlocked;
+    public boolean copyToMemory;
     public boolean wbBlocked;
 
     public MWB (){

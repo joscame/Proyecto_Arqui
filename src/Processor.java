@@ -48,7 +48,7 @@ public class Processor {
         this.memWb = new MWB();
 
         this.ifThread = new IF(this.ifId, this.pc, this.instructionsMemory);
-        //this.id = new ID(this.ifId, this.idEx, this.registers, this.registersLocks);
+        this.id = new ID(this.ifId, this.idEx, this.registers, this.registersLocks);
         this.ex = new EX(this.idEx, this.exMem, this.pc, this.registers, this.registersLocks);
         this.m = new M(this.exMem, this.memWb, this.dataMemory);
         this.wb = new WB(this.memWb);
