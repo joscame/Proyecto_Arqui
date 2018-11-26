@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.concurrent.CyclicBarrier;
 
 public class IF implements Runnable {
 
@@ -10,6 +11,8 @@ public class IF implements Runnable {
     private int failCounter;
     private boolean tempIfBlocked;
     private IR tempIr;
+    private CyclicBarrier clockCycleFinishedBarrier;
+    private CyclicBarrier checkedConflictsBarrier;
 
     public IF (IFID ifId, Integer pc, ArrayList<Integer> instructionsMemory){
         this.ifId = ifId;
@@ -68,10 +71,38 @@ public class IF implements Runnable {
             }
         }
     }
-    public void sendResultsToID(){
+    private void sendResultsToID(){
         this.ifId.ifBlocked = tempIfBlocked;
         this.ifId.ir = tempIr;
         this.ifId.npc = this.pc;
     }
 
+    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
+        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
+        this.checkedConflictsBarrier = checkedConflictsBarrier;
+    }
+
+    private void finishClockCycle(){
+        try {
+            this.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void endProcess(){
+        try {
+            this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean idHasConflicts(){
+        if (this.ifId.idBlocked)
+    }
+
+    private boolean ifHasConflicts(){
+        if (this.ifId.ifBlocked)
+    }
 }

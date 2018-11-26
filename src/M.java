@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.CyclicBarrier;
 
 public class M implements Runnable {
 
@@ -20,6 +21,9 @@ public class M implements Runnable {
 
     int failCounter;
     boolean modifyDataMemory;
+
+    private CyclicBarrier clockCycleFinishedBarrier;
+    private CyclicBarrier checkedConflictsBarrier;
 
     public M (EXM exMem, MWB memWb, ArrayList<Integer> dataMemory){
         this.exMem = exMem;
@@ -114,5 +118,8 @@ public class M implements Runnable {
         this.memWb.memBlocked = this.tempMemBlocked;
     }
 
-
+    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
+        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
+        this.checkedConflictsBarrier = checkedConflictsBarrier;
+    }
 }

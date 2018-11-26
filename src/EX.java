@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.CyclicBarrier;
 
 public class EX implements Runnable {
 
@@ -13,6 +14,9 @@ public class EX implements Runnable {
     private IR tempIr;
     private boolean tempCopyToMemory;
     private int tempPc;
+
+    private CyclicBarrier clockCycleFinishedBarrier;
+    private CyclicBarrier checkedConflictsBarrier;
 
 
     public EX (IDEX idEx, EXM exMem, Integer pc, ArrayList<Integer> registers, ArrayList<Integer> registersLocks){
@@ -134,5 +138,10 @@ public class EX implements Runnable {
         this.exMem.copyToMemory = this.tempCopyToMemory;
         if (changePc)
             this.pc = this.tempPc;
+    }
+
+    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
+        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
+        this.checkedConflictsBarrier = checkedConflictsBarrier;
     }
 }

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.CyclicBarrier;
 
 public class Processor {
 
@@ -34,6 +35,12 @@ public class Processor {
     private EXM exMem;
     private MWB memWb;
 
+    /**
+     * Crea las barreras que serán utlizadas para la sincronización
+     */
+    CyclicBarrier clockCycleFinishedBarrier;
+    CyclicBarrier checkedConflictsBarrier;
+
     public Processor(int quantum, ArrayList<Integer> instructionsMemory){
         this.quantum = quantum;
         this.instructionsMemory = instructionsMemory;
@@ -42,12 +49,16 @@ public class Processor {
         this.registersLocks = new ArrayList<>(33);
         this.pc = 384;
 
+        this.clockCycleFinishedBarrier = new CyclicBarrier(6);
+        this.checkedConflictsBarrier = new CyclicBarrier(6);
+
         this.ifId = new IFID();
         this.idEx = new IDEX();
         this.exMem = new EXM();
         this.memWb = new MWB();
 
         this.ifThread = new IF(this.ifId, this.pc, this.instructionsMemory);
+        this.ifThread.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
         this.id = new ID(this.ifId, this.idEx, this.registers, this.registersLocks);
         this.ex = new EX(this.idEx, this.exMem, this.pc, this.registers, this.registersLocks);
         this.m = new M(this.exMem, this.memWb, this.dataMemory);

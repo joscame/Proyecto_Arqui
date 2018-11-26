@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.concurrent.CyclicBarrier;
 
 public class ID implements Runnable {
 
@@ -13,6 +14,9 @@ public class ID implements Runnable {
     private IR tempIr;
     private int tempRl;
     private boolean tempIdBlocked;
+
+    private CyclicBarrier clockCycleFinishedBarrier;
+    private CyclicBarrier checkedConflictsBarrier;
 
     public ID (IFID ifId, IDEX idEx, ArrayList<Integer> registers, ArrayList<Integer> registersLocks){
         this.ifId = ifId;
@@ -139,5 +143,10 @@ public class ID implements Runnable {
         this.idEx.idBlocked = this.tempIdBlocked;
         this.ifId.idBlocked = this.tempIdBlocked;
         this.idEx.npc = this.ifId.npc;
+    }
+
+    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
+        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
+        this.checkedConflictsBarrier = checkedConflictsBarrier;
     }
 }
