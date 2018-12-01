@@ -40,6 +40,7 @@ public class Processor {
      */
     CyclicBarrier clockCycleFinishedBarrier;
     CyclicBarrier checkedConflictsBarrier;
+    CyclicBarrier wbReadyBarrier;
 
     public Processor(int quantum, ArrayList<Integer> instructionsMemory){
         this.quantum = quantum;
@@ -51,6 +52,7 @@ public class Processor {
 
         this.clockCycleFinishedBarrier = new CyclicBarrier(6);
         this.checkedConflictsBarrier = new CyclicBarrier(6);
+        this.wbReadyBarrier = new CyclicBarrier(6);
 
         this.ifId = new IFID();
         this.idEx = new IDEX();
@@ -59,10 +61,18 @@ public class Processor {
 
         this.ifThread = new IF(this.ifId, this.pc, this.instructionsMemory);
         this.ifThread.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
+
         this.id = new ID(this.ifId, this.idEx, this.registers, this.registersLocks);
+        this.id.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
+
         this.ex = new EX(this.idEx, this.exMem, this.pc, this.registers, this.registersLocks);
+        this.ex.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
+
         this.m = new M(this.exMem, this.memWb, this.dataMemory);
+        this.m.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
+
         this.wb = new WB(this.memWb, this.registers, this.registersLocks);
+        this.wb.setBarriers(this.clockCycleFinishedBarrier, this.checkedConflictsBarrier);
     }
 
     public void start (){

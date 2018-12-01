@@ -99,10 +99,10 @@ public class IF implements Runnable {
     }
 
     private boolean idHasConflicts(){
-        if (this.ifId.idBlocked)
+        return this.ifId.idBlocked;
     }
 
     private boolean ifHasConflicts(){
-        if (this.ifId.ifBlocked)
+        return this.tempIfBlocked;
     }
 }

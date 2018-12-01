@@ -149,4 +149,28 @@ public class ID implements Runnable {
         this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
         this.checkedConflictsBarrier = checkedConflictsBarrier;
     }
+
+    private void finishClockCycle(){
+        try {
+            this.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void endProcess(){
+        try {
+            this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean idHasConflicts(){
+        return this.tempIdBlocked;
+    }
+
+    private boolean exHasConflicts(){
+        return this.idEx.exBlocked;
+    }
 }

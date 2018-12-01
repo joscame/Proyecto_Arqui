@@ -14,6 +14,7 @@ public class EX implements Runnable {
     private IR tempIr;
     private boolean tempCopyToMemory;
     private int tempPc;
+    private boolean tempExBlocked;
 
     private CyclicBarrier clockCycleFinishedBarrier;
     private CyclicBarrier checkedConflictsBarrier;
@@ -143,5 +144,29 @@ public class EX implements Runnable {
     public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
         this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
         this.checkedConflictsBarrier = checkedConflictsBarrier;
+    }
+
+    private void finishClockCycle(){
+        try {
+            this.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void endProcess(){
+        try {
+            this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean exHasConflicts(){
+        return this.tempExBlocked;
+    }
+
+    private boolean memHasConflicts(){
+        return this.exMem.memBlocked;
     }
 }
