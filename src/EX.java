@@ -15,6 +15,7 @@ public class EX implements Runnable {
     private boolean tempCopyToMemory;
     private int tempPc;
     private boolean tempExBlocked;
+    private boolean changePC;
 
     private CyclicBarrier clockCycleFinishedBarrier;
     private CyclicBarrier checkedConflictsBarrier;
@@ -30,6 +31,23 @@ public class EX implements Runnable {
 
     public void run(){
         System.out.println("EX is running");
+        if(idEx.idBlocked){
+            this.tempExBlocked = true;
+        }
+        else{
+            readAndProcessInstruction();
+            prepareTempValues();
+        }
+        idEx.exReady = false;
+        finishClockCycle();
+        if(exMem.memBlocked) {
+            sendResultsToMem();
+        }
+        else{
+            idEx.exBlocked = true;
+        }
+        idEx.exReady = true;
+        endProcess();
     }
 
     private int getAluOutput() {
@@ -82,6 +100,7 @@ public class EX implements Runnable {
 
     private void readAndProcessInstruction() {
         int operationCode = idEx.ir.getOperationCode();
+        this.changePC = false;
 
         switch (operationCode) {
             case 999: // FIN
@@ -91,6 +110,7 @@ public class EX implements Runnable {
                 if (areRegisterValuesEqual()) {
                     this.tempAluOutput = getAluOutput();
                     this.tempPc = this.tempAluOutput;
+                    this.changePC = true;
                 }
                 break;
 
@@ -98,6 +118,7 @@ public class EX implements Runnable {
                 if (!areRegisterValuesEqual()) {
                     this.tempAluOutput = getAluOutput();
                     this.tempPc = this.tempAluOutput;
+                    this.changePC = true;
                 }
                 break;
 
@@ -106,12 +127,14 @@ public class EX implements Runnable {
                 this.registersLocks.set(idEx.ir.getDestinyResgister(), 0);
                 this.tempAluOutput = getAluOutput();
                 this.tempPc = this.tempAluOutput;
+                this.changePC = true;
                 break;
 
             case 103: // jalr
                 this.registers.set(idEx.ir.getDestinyResgister(), this.idEx.npc);
                 this.tempAluOutput = getAluOutput();
                 this.tempPc = this.tempAluOutput;
+                this.changePC = true;
                 break;
 
             case 52: // sc
@@ -132,12 +155,12 @@ public class EX implements Runnable {
         this.tempIr = this.idEx.ir;
     }
 
-    private void sendResultsToMem(boolean changePc){
+    private void sendResultsToMem(){
         this.exMem.aluOutput = this.tempAluOutput;
         this.exMem.b = this.tempB;
         this.exMem.ir = this.tempIr;
         this.exMem.copyToMemory = this.tempCopyToMemory;
-        if (changePc)
+        if (this.changePC)
             this.pc = this.tempPc;
     }
 

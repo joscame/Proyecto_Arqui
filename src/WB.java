@@ -9,16 +9,22 @@ public class WB implements Runnable {
 
     private CyclicBarrier clockCycleFinishedBarrier;
     private CyclicBarrier checkedConflictsBarrier;
+    private CyclicBarrier wbReadyBarrier;
 
-    public WB (MWB memWb, ArrayList<Integer> registers, ArrayList<Integer> registersLocks){
+    public WB (MWB memWb, ArrayList<Integer> registers, ArrayList<Integer> registersLocks, CyclicBarrier wbReadyBarrier){
         this.memWb = memWb;
         this.registers = registers;
         this.registersLocks = registersLocks;
+        this.wbReadyBarrier = wbReadyBarrier;
     }
 
     public void run(){
         System.out.println("WB is running");
         readAndProcessInstruction();
+        letIdStart();
+        finishClockCycle();
+        endProcess();
+
     }
 
     private void readAndProcessInstruction(){
@@ -60,6 +66,13 @@ public class WB implements Runnable {
     private void endProcess(){
         try {
             this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    private void letIdStart(){
+        try {
+            this.wbReadyBarrier.await();  // Se queda bloqueado hasta que ID y WB digan que estan listos.
         } catch (Exception e) {
             e.printStackTrace();
         }

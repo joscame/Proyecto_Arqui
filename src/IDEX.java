@@ -9,6 +9,8 @@ public class IDEX {
     public IR ir;
     public boolean idBlocked;
     public boolean exBlocked;
+    public boolean branchInProgress;
+    public boolean exReady;
 
     public IDEX(){
         this.dir = 0;
@@ -20,5 +22,7 @@ public class IDEX {
         this.ir = null;
         this.idBlocked = false;
         this.exBlocked = false;
+        this.branchInProgress = false;
+        this.exReady = false;
     }
 }

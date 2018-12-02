@@ -29,6 +29,25 @@ public class IF implements Runnable {
 
     public void run(){
         System.out.println("IF is running");
+        loadInst();
+        increasePc();
+        finishClockCycle();
+        while(!ifId.idReady);
+        if(failCounter == 0 && !this.ifId.idBlocked){ //si no hay fallo y si id no bloqueado
+            sendResultsToID();
+        }
+        else if(ifId.idBlocked = true || this.tempIfBlocked) {
+            rewindPc();
+            this.ifId.ifBlocked = true;
+        }
+        endProcess();
+    }
+
+    private void rewindPc(){
+        this.pc = this.pc-4;
+    }
+    private void increasePc(){
+        this.pc = this.pc+4;
     }
 
     private void loadInst() {
@@ -36,11 +55,6 @@ public class IF implements Runnable {
         int dir = (this.pc) - 384;
         int numBlock = dir / 16;
         int numWord = dir % 16;
-
-        if(ifId.idBlocked = true)
-        {
-            this.pc = this.pc-4;
-        }
 
         //buscar en cache la instruccion el bloque
         if (instructionsCache.get(numBlock % 4).blockId == numBlock)//si estaba en cache
@@ -65,7 +79,6 @@ public class IF implements Runnable {
                 instructionsCache.set(numBlock % 4, newBlock);
                 failCounter = 0;
                 this.tempIfBlocked = false;
-                this.pc = this.pc+4;
             } else {
                 --failCounter;
             }
