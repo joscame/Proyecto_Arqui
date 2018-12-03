@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
 
-public class WB implements Runnable {
+public class WB extends Thread {
 
     private MWB memWb;
     private ArrayList<Integer> registers;

@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
 
-public class EX implements Runnable {
+public class EX extends Thread {
 
     private IDEX idEx;
     private EXM exMem;
@@ -40,7 +40,7 @@ public class EX implements Runnable {
         }
         idEx.exReady = false;
         finishClockCycle();
-        if(exMem.memBlocked) {
+        if(this.exMem.memBlocked) {
             sendResultsToMem();
         }
         else{

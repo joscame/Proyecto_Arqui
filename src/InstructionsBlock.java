@@ -5,7 +5,7 @@ public class InstructionsBlock {
     public int blockId;
 
     public InstructionsBlock() {
-        this.words = new ArrayList<>();
+        this.words = new ArrayList<>(4);
         this.blockId = -1;
     }
 

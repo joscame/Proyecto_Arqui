@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
 
-public class M implements Runnable {
+public class M extends Thread {
 
     private static final int SHARED = 0;
     private static final int MODIFIED = 1;
@@ -19,8 +19,8 @@ public class M implements Runnable {
     private boolean tempMemBlocked;
     private boolean tempCopyToMemory;
 
-    int failCounter;
-    boolean modifyDataMemory;
+    public int failCounter;
+    private boolean modifyDataMemory;
 
     private CyclicBarrier clockCycleFinishedBarrier;
     private CyclicBarrier checkedConflictsBarrier;

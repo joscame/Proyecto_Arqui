@@ -2,27 +2,38 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.CyclicBarrier;
 
-public class IF implements Runnable {
+public class IF extends Thread {
 
+    public boolean readInstructions;
     private IFID ifId;
     private Integer pc;
     private ArrayList<Integer> instructionsMemory;
     private ArrayList<InstructionsBlock> instructionsCache;
-    private int failCounter;
+    public int failCounter;
     private boolean tempIfBlocked;
     private IR tempIr;
     private CyclicBarrier clockCycleFinishedBarrier;
     private CyclicBarrier checkedConflictsBarrier;
 
     public IF (IFID ifId, Integer pc, ArrayList<Integer> instructionsMemory){
+        this.readInstructions = false;
         this.ifId = ifId;
         this.pc = pc;
         this.instructionsMemory = instructionsMemory;
         this.instructionsCache = new ArrayList<>(4);
         //llenar blockID con -1
-        for(int i=0; i < instructionsCache.size(); ++i)
+        for(int i=0; i < 4; ++i)
         {
-            instructionsCache.get(i).blockId = -1;
+            InstructionsBlock newInstructionsBlock = new InstructionsBlock();
+            for (int j = 0; j < 4 ; j++) {
+                ArrayList<Integer> instruction = new ArrayList<>(4);
+                for (int k = 0; k < 4; k++) {
+                    instruction.add(0);
+                }
+                newInstructionsBlock.words.add(new IR(instruction));
+            }
+            newInstructionsBlock.blockId = -1;
+            instructionsCache.add(newInstructionsBlock);
         }
         this.failCounter = 0;
     }
@@ -31,6 +42,7 @@ public class IF implements Runnable {
         System.out.println("IF is running");
         loadInst();
         increasePc();
+        System.out.println("IF: PC = " + this.pc);
         finishClockCycle();
         while(!ifId.idReady);
         if(failCounter == 0 && !this.ifId.idBlocked){ //si no hay fallo y si id no bloqueado

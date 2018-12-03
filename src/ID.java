@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.CyclicBarrier;
 
-public class ID implements Runnable {
+public class ID extends Thread {
 
     private IFID ifId;
     private IDEX idEx;
