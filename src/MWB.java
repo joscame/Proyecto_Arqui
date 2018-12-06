@@ -1,17 +1,17 @@
 public class MWB {
 
-    public int aluOutput;
-    public int lmd;
-    public IR ir;
-    public boolean memBlocked;
-    public boolean copyToMemory;
-    public boolean wbBlocked;
+    public static int aluOutput;
+    public static int lmd;
+    public static IR ir;
+    public static boolean memBlocked;
+    public static boolean copyToMemory;
+    public static boolean wbBlocked;
 
-    public MWB (){
-        this.aluOutput = 0;
-        this.lmd = 0;
-        this.ir = null;
-        this.memBlocked = false;
-        this.wbBlocked = false;
+    static {
+        aluOutput = 0;
+        lmd = 0;
+        ir = null;
+        memBlocked = false;
+        wbBlocked = false;
     }
 }

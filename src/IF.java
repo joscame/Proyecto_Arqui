@@ -1,25 +1,16 @@
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.concurrent.CyclicBarrier;
 
 public class IF extends Thread {
+    private ArrayList<InstructionsBlock> instructionsCache;
 
     public boolean readInstructions;
-    private IFID ifId;
-    private Integer pc;
-    private ArrayList<Integer> instructionsMemory;
-    private ArrayList<InstructionsBlock> instructionsCache;
     public int failCounter;
+
     private boolean tempIfBlocked;
     private IR tempIr;
-    private CyclicBarrier clockCycleFinishedBarrier;
-    private CyclicBarrier checkedConflictsBarrier;
 
-    public IF (IFID ifId, Integer pc, ArrayList<Integer> instructionsMemory){
+    public IF (){
         this.readInstructions = false;
-        this.ifId = ifId;
-        this.pc = pc;
-        this.instructionsMemory = instructionsMemory;
         this.instructionsCache = new ArrayList<>(4);
         //llenar blockID con -1
         for(int i=0; i < 4; ++i)
@@ -42,29 +33,29 @@ public class IF extends Thread {
         System.out.println("IF is running");
         loadInst();
         increasePc();
-        System.out.println("IF: PC = " + this.pc);
+        System.out.println("IF: PC = " + RegistersContainer.pc);
         finishClockCycle();
-        while(!ifId.idReady);
-        if(failCounter == 0 && !this.ifId.idBlocked){ //si no hay fallo y si id no bloqueado
+        while(!IFID.idReady);
+        if(failCounter == 0 && !IFID.idBlocked){ //si no hay fallo y si id no bloqueado
             sendResultsToID();
         }
-        else if(ifId.idBlocked = true || this.tempIfBlocked) {
+        else if(IFID.idBlocked = true || this.tempIfBlocked) {
             rewindPc();
-            this.ifId.ifBlocked = true;
+            IFID.ifBlocked = true;
         }
         endProcess();
     }
 
     private void rewindPc(){
-        this.pc = this.pc-4;
+        RegistersContainer.pc = RegistersContainer.pc-4;
     }
     private void increasePc(){
-        this.pc = this.pc+4;
+        RegistersContainer.pc = RegistersContainer.pc+4;
     }
 
     private void loadInst() {
 
-        int dir = (this.pc) - 384;
+        int dir = (RegistersContainer.pc) - 384;
         int numBlock = dir / 16;
         int numWord = dir % 16;
 
@@ -82,7 +73,7 @@ public class IF extends Thread {
                 ArrayList<Integer> block = new ArrayList<>();
                 InstructionsBlock newBlock = new InstructionsBlock();
                 for (int i = blockStartPos, j = 0; i < blockStartPos + 16; i++, j++) {
-                    block.add(instructionsMemory.get(i));
+                    block.add(MemoryHandler.instructionsMemory.get(i));
                 }
                 for (int i = 0; i < 16; i = i + 4) {
                     newBlock.words.add(new IR(new ArrayList<>(block.subList(i, i + 3))));
@@ -97,19 +88,14 @@ public class IF extends Thread {
         }
     }
     private void sendResultsToID(){
-        this.ifId.ifBlocked = tempIfBlocked;
-        this.ifId.ir = tempIr;
-        this.ifId.npc = this.pc;
-    }
-
-    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
-        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
-        this.checkedConflictsBarrier = checkedConflictsBarrier;
+        IFID.ifBlocked = tempIfBlocked;
+        IFID.ir = tempIr;
+        IFID.npc = RegistersContainer.pc;
     }
 
     private void finishClockCycle(){
         try {
-            this.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+            BarriersHandler.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -117,17 +103,9 @@ public class IF extends Thread {
 
     private void endProcess(){
         try {
-            this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+            BarriersHandler.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private boolean idHasConflicts(){
-        return this.ifId.idBlocked;
-    }
-
-    private boolean ifHasConflicts(){
-        return this.tempIfBlocked;
     }
 }

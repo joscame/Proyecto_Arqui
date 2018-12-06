@@ -1,28 +1,28 @@
 public class IDEX {
 
-    public int dir;
-    public int npc;
-    public int a;
-    public int b;
-    public int imm;
-    public int RL;
-    public IR ir;
-    public boolean idBlocked;
-    public boolean exBlocked;
-    public boolean branchInProgress;
-    public boolean exReady;
+    public static int dir;
+    public static int npc;
+    public static int a;
+    public static int b;
+    public static int imm;
+    public static int RL;
+    public static IR ir;
+    public static boolean idBlocked;
+    public static boolean exBlocked;
+    public static boolean branchInProgress;
+    public static boolean exReady;
 
-    public IDEX(){
-        this.dir = 0;
-        this.npc = 0;
-        this.a = 0;
-        this.b = 0;
-        this.imm = 0;
-        this.RL = 0;
-        this.ir = null;
-        this.idBlocked = false;
-        this.exBlocked = false;
-        this.branchInProgress = false;
-        this.exReady = false;
+    static {
+        dir = 0;
+        npc = 0;
+        a = 0;
+        b = 0;
+        imm = 0;
+        RL = 0;
+        ir = null;
+        idBlocked = false;
+        exBlocked = false;
+        branchInProgress = false;
+        exReady = false;
     }
 }

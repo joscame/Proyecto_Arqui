@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.concurrent.CyclicBarrier;
 
 public class M extends Thread {
 
@@ -7,11 +6,8 @@ public class M extends Thread {
     private static final int MODIFIED = 1;
     private static final int BLOCKID = 4;
     private static final int STATUS = 5;
-
-    private EXM exMem;
-    private MWB memWb;
+    
     private int[][] dataCache;
-    private ArrayList<Integer> dataMemory;
 
     private int tempAluOutput;
     private int tempLmd;
@@ -22,24 +18,18 @@ public class M extends Thread {
     public int failCounter;
     private boolean modifyDataMemory;
 
-    private CyclicBarrier clockCycleFinishedBarrier;
-    private CyclicBarrier checkedConflictsBarrier;
-
-    public M (EXM exMem, MWB memWb, ArrayList<Integer> dataMemory){
-        this.exMem = exMem;
-        this.memWb = memWb;
-        this.dataMemory = dataMemory;
+    public M (){
         this.failCounter = 0;
         modifyDataMemory = false;
         this.dataCache = new int[4][6];
         for (int i = 0; i < 4; i++){
-            this.dataCache[i][4] = -1;
+            this.dataCache[i][BLOCKID] = -1;
         }
     }
 
     public void run(){
         System.out.println("M is running");
-        if (this.exMem.exBlocked){
+        if (EXM.exBlocked){
             this.tempMemBlocked = true;
         }
         else{
@@ -54,29 +44,29 @@ public class M extends Thread {
     }
 
     private void readAndProcessInstruction(){
-        int blockNum = this.exMem.aluOutput / 16;
+        int blockNum = EXM.aluOutput / 16;
         int cacheBlockNum = blockNum % 4;
-        int word = (this.exMem.aluOutput % 16) / 4;
+        int word = (EXM.aluOutput % 16) / 4;
         if(this.dataCache[cacheBlockNum][BLOCKID] == blockNum){ // hit
-            int operationCode = this.exMem.ir.getOperationCode();
+            int operationCode = EXM.ir.getOperationCode();
             switch(operationCode){
                 case 5: case 51: //lw lr
                     this.tempLmd = this.dataCache[cacheBlockNum][word];
                     break;
 
                 case 37: //sw
-                    this.dataCache[cacheBlockNum][word] = this.exMem.b;
+                    this.dataCache[cacheBlockNum][word] = EXM.b;
                     this.dataCache[cacheBlockNum][STATUS] = MODIFIED;
                     break;
 
                 case 52: //sc
-                    if (this.exMem.copyToMemory){
-                        this.dataCache[cacheBlockNum][word] = this.exMem.b;
+                    if (EXM.copyToMemory){
+                        this.dataCache[cacheBlockNum][word] = EXM.b;
                         this.dataCache[cacheBlockNum][STATUS] = MODIFIED;
                     }
                     break;
             }
-            this.exMem.memBlocked = false;
+            EXM.memBlocked = false;
             this.tempMemBlocked = false;
         }
         else{ //Fallo de cache
@@ -86,20 +76,20 @@ public class M extends Thread {
                     this.failCounter += 48;
                 }
                 this.failCounter += 48;
-                this.exMem.memBlocked = true;
+                EXM.memBlocked = true;
                 this.tempMemBlocked = true;
 
             } else if (this.failCounter == 1){ // Es el último ciclo de reloj del fallo, se soluciona el fallo
 
-                int dataMemoryIndex = (this.exMem.aluOutput / 16) * 4;
+                int dataMemoryIndex = (EXM.aluOutput / 16) * 4;
                 if (this.dataCache[cacheBlockNum][STATUS] == MODIFIED){ //Si el bloque está modificado se copia a memoria
                     for (int i = dataMemoryIndex, j = 0; i < dataMemoryIndex + 4; i++, ++j) {
-                        this.dataMemory.set(i, this.dataCache[cacheBlockNum][j]);
+                        MemoryHandler.dataMemory.set(i, this.dataCache[cacheBlockNum][j]);
                     }
                 }
 
                 for (int i = dataMemoryIndex, j = 0; i < dataMemoryIndex + 4; i++, ++j) { // Se copia el bloque de memoria a cache
-                    this.dataCache[cacheBlockNum][j] = this.dataMemory.get(i);
+                    this.dataCache[cacheBlockNum][j] = MemoryHandler.dataMemory.get(i);
                 }
 
                 // Se actualiza el num de bloque y el estado en el caché
@@ -116,27 +106,22 @@ public class M extends Thread {
     }
 
     private void prepareTempValues(){
-        this.tempCopyToMemory = this.exMem.copyToMemory;
-        this.tempIr = this.exMem.ir;
-        this.tempAluOutput = exMem.aluOutput;
+        this.tempCopyToMemory = EXM.copyToMemory;
+        this.tempIr = EXM.ir;
+        this.tempAluOutput = EXM.aluOutput;
     }
 
     private void sendResultsToWb(){
-        this.memWb.aluOutput = this.tempAluOutput;
-        this.memWb.copyToMemory = this.tempCopyToMemory;
-        this.memWb.ir = this.tempIr;
-        this.memWb.lmd = this.tempLmd;
-        this.memWb.memBlocked = this.tempMemBlocked;
-    }
-
-    public void setBarriers(CyclicBarrier clockCycleFinishedBarrier, CyclicBarrier checkedConflictsBarrier){
-        this.clockCycleFinishedBarrier = clockCycleFinishedBarrier;
-        this.checkedConflictsBarrier = checkedConflictsBarrier;
+        MWB.aluOutput = this.tempAluOutput;
+        MWB.copyToMemory = this.tempCopyToMemory;
+        MWB.ir = this.tempIr;
+        MWB.lmd = this.tempLmd;
+        MWB.memBlocked = this.tempMemBlocked;
     }
 
     private void finishClockCycle(){
         try {
-            this.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+            BarriersHandler.clockCycleFinishedBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -144,17 +129,9 @@ public class M extends Thread {
 
     private void endProcess(){
         try {
-            this.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+            BarriersHandler.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private boolean memHasConflicts(){
-        return this.tempMemBlocked;
-    }
-
-    private boolean wbHasConflicts(){
-        return this.memWb.wbBlocked;
     }
 }

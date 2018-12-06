@@ -1,13 +1,26 @@
-import javax.swing.text.html.HTMLDocument;
-import java.io.BufferedReader;
-import java.io.*;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Scanner;
 
-public class InstructionsLoader {
+public class MemoryHandler {
+    public static ArrayList<Integer> instructionsMemory;
+    public static ArrayList<Integer> dataMemory;
+
+    static{
+        /* La memoria de instrucciones tiene espacio para 40 bloques de 4 instrucciones cada uno (Intruccion = 4 enteros) */
+        instructionsMemory = new ArrayList<Integer>(640);
+        loadInstructions();
+
+        dataMemory = new ArrayList<Integer>(96);
+        initializeDataMemory();
+    }
+
+    public static void initializeDataMemory(){
+        for (int i = 0; i < 96; i++) {
+            dataMemory.add(0);
+        }
+    }
 
     /**
      * Carga los archivos de hilillos en la memoria de instrucciones
@@ -19,7 +32,7 @@ public class InstructionsLoader {
      *      true si se pudieron cargar los archivos
      *      false si no se pudieron cargar
      */
-    public static boolean loadInstructions(ArrayList<Integer> instructionsMemory) {
+    public static boolean loadInstructions() {
 
         String path = "assets";
         Scanner s0;
@@ -60,4 +73,4 @@ public class InstructionsLoader {
         }
         return true;
     }
- }
+}
