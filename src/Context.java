@@ -6,7 +6,7 @@ public class Context {
 
     public Context(int id, int pc){
         this.id = id;
-        this.registers = new int[32];
+        this.registers = new int[33];
         this.pc = pc;
         this.isDone = false;
     }

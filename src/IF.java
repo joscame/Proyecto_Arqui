@@ -31,19 +31,32 @@ public class IF extends Thread {
 
     public void run(){
         System.out.println("IF is running");
-        loadInst();
-        increasePc();
-        System.out.println("IF: PC = " + RegistersContainer.pc);
-        finishClockCycle();
-        while(!IFID.idReady);
-        if(failCounter == 0 && !IFID.idBlocked){ //si no hay fallo y si id no bloqueado
-            sendResultsToID();
+        while (true){
+            if (this.readInstructions){
+                loadInst();
+                increasePc();
+                System.out.println("IF: PC = " + RegistersContainer.pc);
+                finishClockCycle();
+                while(!IFID.idReady);
+                if(this.failCounter == 0 && !IFID.idBlocked){ //si no hay fallo y si id no bloqueado
+                    sendResultsToID();
+                    //IFID.ifBlocked = false;
+                }
+                else if(IFID.idBlocked || this.tempIfBlocked || IFID.branchInProgress) {
+                    rewindPc();
+                    if (this.tempIfBlocked)
+                        IFID.ifBlocked = true;
+                }
+                endProcess();
+            } else{
+                finishClockCycle();
+                while(!IFID.idReady);
+                if(!IFID.idBlocked){ //si no hay fallo y si id no bloqueado
+                    IFID.ir = null;
+                }
+                endProcess();
+            }
         }
-        else if(IFID.idBlocked = true || this.tempIfBlocked) {
-            rewindPc();
-            IFID.ifBlocked = true;
-        }
-        endProcess();
     }
 
     private void rewindPc(){
@@ -57,7 +70,7 @@ public class IF extends Thread {
 
         int dir = (RegistersContainer.pc) - 384;
         int numBlock = dir / 16;
-        int numWord = dir % 16;
+        int numWord = dir % 16 / 4;
 
         //buscar en cache la instruccion el bloque
         if (instructionsCache.get(numBlock % 4).blockId == numBlock)//si estaba en cache
@@ -76,10 +89,11 @@ public class IF extends Thread {
                     block.add(MemoryHandler.instructionsMemory.get(i));
                 }
                 for (int i = 0; i < 16; i = i + 4) {
-                    newBlock.words.add(new IR(new ArrayList<>(block.subList(i, i + 3))));
+                    newBlock.words.add(new IR(new ArrayList<>(block.subList(i, i + 4))));
                 }
                 newBlock.blockId = numBlock;
                 instructionsCache.set(numBlock % 4, newBlock);
+                tempIr = instructionsCache.get(numBlock % 4).words.get(numWord);
                 failCounter = 0;
                 this.tempIfBlocked = false;
             } else {

@@ -6,8 +6,8 @@ public class BarriersHandler {
     public static CyclicBarrier wbReadyBarrier;
 
     static {
-        clockCycleFinishedBarrier = new CyclicBarrier(6);
-        checkedConflictsBarrier = new CyclicBarrier(6);
+        clockCycleFinishedBarrier = new CyclicBarrier(3);
+        checkedConflictsBarrier = new CyclicBarrier(3);
         wbReadyBarrier = new CyclicBarrier(2);
     }
 }

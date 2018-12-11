@@ -47,28 +47,26 @@ public class Processor {
         System.out.println("El procesador comienza a leer instrucciones");
 
         this.ifThread.start();
+        this.id.start();
         int hilillosCounter = 0;
         int clockCicles = 0;
+        int hililloId = hilillosCounter % this.contexts.size();
         while (this.contexts.size() > 0){
-            RegistersContainer.pc = this.contexts.get(hilillosCounter % this.contexts.size()).pc;
-            try {
-                TimeUnit.SECONDS.sleep(3);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            RegistersContainer.pc = this.contexts.get(hililloId).pc;
             this.ifThread.readInstructions = true;
 
             while (clockCicles <= this.quantum){
                 System.out.println("Processor: PC = " + RegistersContainer.pc);
                 finishClockCycle();
-                if (this.ifThread.failCounter == 0 && this.m.failCounter == 0){ //Si no hay fallos de caché
+                if (this.ifThread.failCounter == 0 && this.m.failCounter == 0 && ifThread.readInstructions){ //Si no hay fallos de caché
                     ++clockCicles;
                 }
                 endProcess();
             }
 
             clockCicles = 0;
-            this.contexts.get(hilillosCounter % contexts.size()).pc = RegistersContainer.pc;
+            this.contexts.get(hililloId).pc = RegistersContainer.pc;
+            copyRegistersToContext(hililloId);
             ++hilillosCounter;
         }
     }
@@ -86,6 +84,12 @@ public class Processor {
             BarriersHandler.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void copyRegistersToContext(int hililloId){
+        for (int i = 0; i < 33; i++) {
+            this.contexts.get(hililloId).registers[i] =  RegistersContainer.registers.get(i);
         }
     }
 }

@@ -15,28 +15,37 @@ public class ID extends Thread {
 
     public void run(){
         System.out.println("ID is running");
-        waitForWB();
-        if(!IFID.branchInProgress && !IFID.ifBlocked){
-            processInstruction();
-            prepareTempValues();
+        while (true){
+            //waitForWB();
+            if(!IFID.branchInProgress && !IFID.ifBlocked){
+                if (IFID.ir != null){
+                    processInstruction();
+                    prepareTempValues();
+                }
+                else{
+                    this.tempIr = null;
+                }
+            }
+            else if(IFID.branchInProgress && !IDEX.branchInProgress){
+                IFID.branchInProgress = false;
+            }
+            IFID.idReady = false;
+            finishClockCycle();
+
+            //while(!IDEX.exReady);
+
+            if(!IDEX.exBlocked || !IDEX.branchInProgress){
+                sendResultsToEx();
+            }
+            else if(IDEX.exBlocked){
+                IFID.idBlocked = true;
+            }
+            else if(this.tempIdBlocked) {
+                IDEX.idBlocked = true;
+            }
+            IFID.idReady = true;
+            endProcess();
         }
-        else if(IFID.branchInProgress && !IDEX.branchInProgress){
-            IFID.branchInProgress = false;
-        }
-        IFID.idReady = false;
-        finishClockCycle();
-        while(!IDEX.exReady);
-        if(!IDEX.exBlocked || !IDEX.branchInProgress){
-            sendResultsToEx();
-        }
-        else if(IDEX.exBlocked){
-            IFID.idBlocked = true;
-        }
-        else if(this.tempIdBlocked) {
-            IDEX.idBlocked = true;
-        }
-        IFID.idReady = true;
-        endProcess();
     }
 
 
