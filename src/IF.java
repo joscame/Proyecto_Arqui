@@ -37,7 +37,7 @@ public class IF extends Thread {
                 increasePc();
                 System.out.println("IF: PC = " + RegistersContainer.pc);
                 finishClockCycle();
-                while(!IFID.idReady);
+                waitForId();
                 if(this.failCounter == 0 && !IFID.idBlocked){ //si no hay fallo y si id no bloqueado
                     sendResultsToID();
                     //IFID.ifBlocked = false;
@@ -50,7 +50,7 @@ public class IF extends Thread {
                 endProcess();
             } else{
                 finishClockCycle();
-                while(!IFID.idReady);
+                waitForId();
                 if(!IFID.idBlocked){ //si no hay fallo y si id no bloqueado
                     IFID.ir = null;
                 }
@@ -118,6 +118,14 @@ public class IF extends Thread {
     private void endProcess(){
         try {
             BarriersHandler.checkedConflictsBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void waitForId(){
+        try {
+            BarriersHandler.idReadyBarrier.await();  // Se queda bloqueado hasta que 5 hilos hagan esta llamada.
         } catch (Exception e) {
             e.printStackTrace();
         }

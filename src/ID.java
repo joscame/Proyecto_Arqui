@@ -17,19 +17,19 @@ public class ID extends Thread {
         System.out.println("ID is running");
         while (true){
             //waitForWB();
-            if(!IFID.branchInProgress && !IFID.ifBlocked){
-                if (IFID.ir != null){
+            if (IFID.ir != null){
+                if(!IFID.branchInProgress && !IFID.ifBlocked){
                     processInstruction();
                     prepareTempValues();
                 }
-                else{
-                    this.tempIr = null;
+                else if(IFID.branchInProgress && !IDEX.branchInProgress){
+                    IFID.branchInProgress = false;
                 }
+            }else{
+                this.tempIr = null;
             }
-            else if(IFID.branchInProgress && !IDEX.branchInProgress){
-                IFID.branchInProgress = false;
-            }
-            IFID.idReady = false;
+
+            //IFID.idReady = false;
             finishClockCycle();
 
             //while(!IDEX.exReady);
@@ -43,7 +43,8 @@ public class ID extends Thread {
             else if(this.tempIdBlocked) {
                 IDEX.idBlocked = true;
             }
-            IFID.idReady = true;
+            //IFID.idReady = true;
+            idIsReady();
             endProcess();
         }
     }
@@ -194,9 +195,18 @@ public class ID extends Thread {
             e.printStackTrace();
         }
     }
+
     private void waitForWB(){
         try {
             BarriersHandler.wbReadyBarrier.await();  // Se queda bloqueado hasta que ID y WB digan que estan listos.
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void idIsReady(){
+        try {
+            BarriersHandler.idReadyBarrier.await();  // Se queda bloqueado hasta que ID y WB digan que estan listos.
         } catch (Exception e) {
             e.printStackTrace();
         }
